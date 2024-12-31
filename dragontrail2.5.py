@@ -54,17 +54,6 @@ ascii_art = {
     █████    █████    ░░████████ █████ █████                  
    ░░░░░    ░░░░░      ░░░░░░░░ ░░░░░ ░░░░░                   """,
 
-    "mount": r"""
-          /\
-         /**\
-        /****\   /\
-       /      \ /**\
-      /  /\    /    \        /\    /\  /\      /\            /\/\/\  /\
-     /  /  \  /      \      /  \/\/  \/  \  /\/  \/\  /\  /\/ / /  \/  \
-    /  /    \/ /\     \    /    \ \  /    \/ /   /  \/  \/  \  /    \   \
-   /  /      \/  \/\   \  /      \    /   /    \
-__/__/_______/___/__\___\__________________________________________________""",
-    
     "status": r"""
      █████████   █████               █████                      
      ███░░░░░███ ░░███               ░░███                       
@@ -84,6 +73,19 @@ __/__/_______/___/__\___\__________________________________________________""",
         ░███     ░███      ███░░███  ░░███ ███  ░███░░░   ░███ 
         █████    █████    ░░████████  ░░█████   ░░██████  █████
         ░░░░░    ░░░░░      ░░░░░░░░    ░░░░░     ░░░░░░  ░░░░░ """,
+
+"hourglasses": r"""
+    --------------------------------------------------------------------
+      \°°°°°°°/  \°°°°°°°/  \       /  \       /  \       /  \       /  
+       \°°°°°/    \°°°°°/    \°°°°°/    \     /    \     /    \     /   
+        \°°°/      \°°°/      \°°°/      \°°°/      \   /      \   /    
+         \°/        \°/        \°/        \°/        \°/        \ /     
+          0          0          0          0          0          0      
+         / \        / \        / \        / \        / \        /°\     
+        /   \      /   \      /   \      /   \      /°°°\      /°°°\    
+       /     \    /     \    /     \    /°°°°°\    /°°°°°\    /°°°°°\   
+      /       \  /       \  /°°°°°°°\  /°°°°°°°\  /°°°°°°°\  /°°°°°°°\  
+    --------------------------------------------------------------------""",
 
     "hunt": r"""
     █████   █████                        █████   
@@ -132,6 +134,17 @@ __/__/_______/___/__\___\__________________________________________________""",
     ░░█████████ ░░██████ ░░██████  ░░████████  ░░█████ 
       ░░░░░░░░░   ░░░░░░   ░░░░░░    ░░░░░░░░    ░░░░░  """,
 
+    "mount": r"""
+          /\
+         /**\
+        /****\   /\
+       /      \ /**\
+      /  /\    /    \        /\    /\  /\      /\            /\/\/\  /\
+     /  /  \  /      \      /  \/\/  \/  \  /\/  \/\  /\  /\/ / /  \/  \
+    /  /    \/ /\     \    /    \ \  /    \/ /   /  \/  \/  \  /    \   \
+   /  /      \/  \/\   \  /      \    /   /    \
+__/__/_______/___/__\___\__________________________________________________""",
+
     "rest": r"""
     ███████████                     █████   
     ░░███░░░░░███                   ░░███    
@@ -152,18 +165,6 @@ __/__/_______/___/__\___\__________________________________________________""",
     ░░█████████ ░░██████ ░░██████  ████ █████
      ░░░░░░░░░   ░░░░░░   ░░░░░░  ░░░░ ░░░░░ """,
 
-    "hourglasses": r"""
-    --------------------------------------------------------------------
-      \°°°°°°°/  \°°°°°°°/  \       /  \       /  \       /  \       /  
-       \°°°°°/    \°°°°°/    \°°°°°/    \     /    \     /    \     /   
-        \°°°/      \°°°/      \°°°/      \°°°/      \   /      \   /    
-         \°/        \°/        \°/        \°/        \°/        \ /     
-          0          0          0          0          0          0      
-         / \        / \        / \        / \        / \        /°\     
-        /   \      /   \      /   \      /   \      /°°°\      /°°°\    
-       /     \    /     \    /     \    /°°°°°\    /°°°°°\    /°°°°°\   
-      /       \  /       \  /°°°°°°°\  /°°°°°°°\  /°°°°°°°\  /°°°°°°°\  
-    --------------------------------------------------------------------""",
 
     "dragonart": r"""
                          _====-_      _-====__
@@ -180,16 +181,34 @@ __/__/_______/___/__\___\__________________________________________________""",
           \ |/  V  V      V  V   \VV/  V  V      V  V  \| /
     """,
 
-    "gear_shop": r"""
-                   
-            \\\~///
-           \|/   \|/  /``````````````\
-            | *,* | <<  Get Yur Gear!|  
-             \__0/    \,,,,,,,,,,,,,,/
-             
+    "gear_shop": r"""               
+    \\\~///
+   \|/   \|/  /``````````````\
+    | *,* | <<  Get Yur Gear!|  
+     \__0/    \,,,,,,,,,,,,,,/""",
+
+    "main_menu": r"""
+           /│\           
+        ▓▓▓▓▓▓▓▓▓        
+     ▓▓▓░░░░░░░░░▓▓▓     
+   ▓▓░░░    N    ░░░▓▓   
+  ▓░░   *   │   *   ░░▓  
+ ▓░         │         ░▓ 
+<▓░W────────+────────E░▓> WHAT WOULD YOU LIKE TO DO?
+ ▓░         │         ░▓ 
+  ▓░░   *   │   *   ░░▓  
+   ▓▓░░░    S    ░░░▓▓   
+     ▓▓▓░░░░░░░░░▓▓▓     
+        ▓▓▓▓▓▓▓▓▓        
+           \│/               
     """
 
 }
+
+how_to_play = """
+\nHOW TO PLAY:
+
+"""
 
 welcome_text = """
 \nThere is a Dragon that has been terrorizing the town.
@@ -219,10 +238,10 @@ MAX_DAYS_PER_REST = 3
 FOOD_PER_HUNT = 5
 MIN_DAYS_PER_HUNT = 1
 MAX_DAYS_PER_HUNT = 4
-WATER_SKIN_CAPACITY = 8  # lbs     ###THESE SHOULD BE CUT
+WATER_SKIN_CAPACITY = 8  # lbs     ###THESE SHOULD BE CUT??
 WATER_DRINK_AMOUNT = 1  #  lbs
-WOOD_CORD_SIZE = 3  # lbs          #### THESE SHOULD BE CUT
-MAX_CARRY_CAPACITY = 200  #  lbs
+WOOD_CORD_SIZE = 3  # lbs          #### THESE SHOULD BE CUT??
+MAX_CARRY_CAPACITY = 150  #  lbs
 current_biome = "Marine"
 
 BIOMES = [
@@ -308,6 +327,7 @@ def handle_game():
     while True:
         check_win_condition()
         space()
+        display_ascii_art("main_menu", Fore.LIGHTYELLOW_EX, Style.BRIGHT)
         command = input("What would you like to do? \n (1) Status / (2) Travel / (3) Hunt / (4) Scout/ (5) Rest / (6) Cook/ (7) Help / (8) Credits / (9) Quit \n").strip().lower() #Improved input handling
 
         if command == '1':
@@ -342,12 +362,11 @@ def handle_game():
 # Resource Management Functions
 def collect_resource(resource_type, amount):
     if resource_type == "water":
-        # Check waterskin capacity BEFORE collecting
         available_space = game_data["resources"]["waterskins"] * WATER_SKIN_CAPACITY - game_data["resources"]["water"]
         if available_space <= 0:
             print(Fore.RED + "You have no space left in your waterskins!")
             return
-        amount = min(amount, available_space)  # Collect only what fits
+        amount = min(amount, available_space)
 
     if resource_type == "wood" and amount % WOOD_CORD_SIZE != 0:
         print("Invalid amount. Wood must be collected in 3-lb increments.")
@@ -356,11 +375,14 @@ def collect_resource(resource_type, amount):
     modify_resource(resource_type, amount)
     update_carry_weight()
 
-def collect_wood(amount):
-    collect_resource("wood", amount)
 
 def collect_water(amount):
     collect_resource("water", amount)
+
+
+def collect_wood(amount):
+    collect_resource("wood", amount)
+
 
 def drink_water():
     if game_data["resources"]["water"] < WATER_DRINK_AMOUNT:
@@ -369,6 +391,7 @@ def drink_water():
     modify_resource("water", -WATER_DRINK_AMOUNT)
     modify_health(1)
     space()
+
 
 def get_next_biome(current_biome):
     """
@@ -399,12 +422,30 @@ def update_carry_weight():
     return total_weight
 
 def modify_resource(resource_type, amount, event_description=None):
-    """Modifies a resource and prints a message. Handles multi-day resource changes."""
+    """Modifies a resource, respecting carry capacity for certain items."""
+    original_amount = game_data["resources"][resource_type]
     game_data["resources"][resource_type] += amount
-    game_data["resources"][resource_type] = max(0, game_data["resources"][resource_type])
+    game_data["resources"][resource_type] = max(0, game_data["resources"][resource_type]) #Ensure no negative resources
 
     if event_description:
         print(Fore.CYAN + f"Event: {event_description}")
+
+    if resource_type in ["food", "supplies", "wood"]:
+        update_carry_weight()
+        if game_data["player"]["carry_weight"] > MAX_CARRY_CAPACITY:
+            # Calculate how much to remove to stay under capacity
+            over_capacity = game_data["player"]["carry_weight"] - MAX_CARRY_CAPACITY
+            removed_amount = 0
+            if resource_type == "food":
+                removed_amount = min(over_capacity // item_weights["food"], game_data["resources"]["food"] - original_amount)
+                modify_resource("food", -removed_amount, f"Carry capacity exceeded: Dropped {removed_amount} food.")
+            elif resource_type == "supplies":
+                removed_amount = min(over_capacity // item_weights["supplies"], game_data["resources"]["supplies"] - original_amount)
+                modify_resource("supplies", -removed_amount, f"Carry capacity exceeded: Dropped {removed_amount} supplies.")
+            elif resource_type == "wood":
+                removed_amount = min(over_capacity // item_weights["wood"], game_data["resources"]["wood"] - original_amount)
+                modify_resource("wood", -removed_amount, f"Carry capacity exceeded: Dropped {removed_amount} wood.")
+            update_carry_weight()
 
 def modify_health(amount, event_description=None):
     """Modifies health and prints a message. Handles multi-day health changes."""
@@ -821,15 +862,20 @@ environmental_events = [
     {
         "name": "You Find an Empty Waterskin",
         "description": "You find an empty waterskin!",
-        "effect": lambda: modify_waterskins(1),
-    }
+        "effect": lambda: modify_resource("waterskins", int(random.randint(2, 3))),
+    },
+    {
+        "name": "Stumbled Upon Wood",
+        "description": "You stumble upon a pile of wood!",
+        "effect": lambda: modify_resource("wood", random.randint(3, 9)),
+    },
 ]
 
 scouting_events = [
     {
         "name": "Gentle Rain",
         "description": "A mild snap rainstorm happens while you're scouting, granting you easy clean water.",
-        "effect": lambda: modify_resource("water", +8),
+        "effect": lambda: collect_water(8), #Use collect_water to handle waterskin capacity
     },
     {
         "name": "Wild Animal Encounter",
@@ -1039,33 +1085,49 @@ def handle_boss_fight():
 
 def handle_purchase():
     """
-    Streamlined gear purchasing menu.
-    Players can purchase multiple items in one session before starting the game.
+    Enhanced gear purchasing menu with carry capacity checks, screen refresh, 
+    and validation for waterskins, water, wood cords, and wood. 
+    Automatically ends purchasing if the player runs out of gold or reaches carry capacity.
     """
-    display_ascii_art("gear_shop", Fore.BLACK + Back.WHITE)
+    display_ascii_art("gear_shop", Fore.WHITE + Style.BRIGHT)
     print("\nWelcome to the Gear Shop!")
     print("-" * 30)
-    update_carry_weight()
 
     while True:
         # Display current stats and inventory
-        print(f"\nGold: {game_data['resources']['gold']} gp | Carry Weight: {game_data['player']['carry_weight']}/{MAX_CARRY_CAPACITY} lbs")
+        update_carry_weight()
+        print(f"Gold: {game_data['resources']['gold']} gp | Carry Weight: {game_data['player']['carry_weight']}/{MAX_CARRY_CAPACITY} lbs")
         print("-" * 30)
         print("Items Available:")
         print("1. Food (1 gp/lb)")
         print("2. Water (2 gp/waterskin, 8 lbs of water per waterskin)")
         print("3. Herbs (3 gp each)")
         print("4. Supplies (2 gp/lb)")
-        print("5. Wood (3 gp for 3 lbs of wood)")
+        print("5. Wood Cords (3 gp for 3 lbs of wood)")
         print("6. Finish Shopping")
-        print(f"\nYour Current Resources: Food: {game_data['resources']['food']} lbs, Water: {game_data['resources']['water']} lbs, Waterskins: {game_data['resources']['waterskins']}, Herbs: {game_data['resources']['herbs']}, Supplies: {game_data['resources']['supplies']}, Wood Cords: {game_data['resources']['wood_cords']}")
+        print(Fore.GREEN + Style.BRIGHT + f"""Your Current Resources: 
+        Food: {game_data['resources']['food']} lbs, 
+        Water: {game_data['resources']['water']} lbs, 
+        Waterskins: {game_data['resources']['waterskins']}, 
+        Herbs: {game_data['resources']['herbs']}, 
+        Supplies: {game_data['resources']['supplies']}, 
+        Wood: {game_data['resources']['wood']} lbs,
+        Wood Cords: {game_data['resources']['wood_cords']}\n""")
 
-        # Get player choice
+        if game_data["resources"]["gold"] <= 0:
+            print(Fore.RED + "\nYou've run out of gold! Shopping is complete.")
+            break  # Exit the loop if no gold remains
+
+        if game_data['player']['carry_weight'] >= MAX_CARRY_CAPACITY:
+            print(Fore.RED + "\nYou've reached your carry capacity! Shopping is complete.")
+            break  # Exit the loop if carry capacity is reached
+
         try:
-            choice = int(input("Enter your choice (1-6): "))
+            # Get player choice
+            choice = int(input("What would you like to buy? (1-6): "))
             if choice == 6:  # Finish shopping
                 print(Fore.YELLOW + "\nShopping complete! Beginning your journey...")
-                return  # Exit the purchase loop and start the game
+                break  # Exit the loop if the player chooses to finish shopping
 
             # Map choice to item type and cost
             item_type = {1: "food", 2: "water", 3: "herbs", 4: "supplies", 5: "wood"}[choice]
@@ -1075,47 +1137,69 @@ def handle_purchase():
             # Ask how many items to purchase
             while True:
                 try:
-                    quantity = int(input(f"How many {item_type} would you like to buy? "))
-                    if quantity > 0:
+                    quantity = int(input(f"How many {item_type} would you like to buy? (Enter 0 to cancel): "))
+                    if quantity == 0:
+                        print(Fore.CYAN + "Purchase canceled. Returning to menu...")
+                        break  # Return to the menu
+                    elif quantity > 0:
                         break
                     else:
                         print("Please enter a positive number.")
                 except ValueError:
                     print("Invalid input. Please enter a number.")
 
-            # Calculate total cost and check affordability
+            # If the user cancels, restart the menu
+            if quantity == 0:
+                continue
+
+            # Calculate total cost and total weight
             total_cost = item_cost * quantity
-            if item_type == "water":  # Adjust cost for water (waterskin + water itself)
-                total_cost = 2 * quantity  # 2 gp per waterskin
-            elif item_type == "wood":  # Adjust cost for wood (3 lbs per bundle)
+            total_weight = item_weight * quantity
+
+            if item_type == "water":  # Adjust weight and cost for waterskins
+                total_cost = 2 * quantity
+                total_weight = WATER_SKIN_CAPACITY * quantity
+            elif item_type == "wood":  # Adjust for wood cords
                 total_cost = 3 * quantity
+                total_weight = WOOD_CORD_SIZE * quantity
 
-            if game_data["resources"]["gold"] >= total_cost:
-                # Deduct gold and add resources
-                game_data["resources"]["gold"] -= total_cost
-                if item_type == "food":
-                    modify_resource("food", quantity)
-                elif item_type == "water":
-                    modify_resource("water", quantity * WATER_SKIN_CAPACITY)
-                    modify_resource("waterskins", quantity)
-                elif item_type == "herbs":
-                    modify_resource("herbs", quantity)
-                elif item_type == "supplies":
-                    modify_resource("supplies", quantity)
-                elif item_type == "wood":
-                    modify_resource("wood", quantity * WOOD_CORD_SIZE)
-                    modify_resource("wood_cords", quantity)
-
-                # Success message
-                print(Fore.GREEN + f"Purchase successful! You bought {quantity} {item_type}(s) for {total_cost} gp.")
-            else:
+            # Check affordability and carry capacity (again, in case of changes)
+            if game_data["resources"]["gold"] < total_cost:
                 print(Fore.RED + "You don't have enough gold to make this purchase.")
+                input(Fore.CYAN + "Press Enter to continue...")
+                clear_screen()
+                continue
 
-            # Update carry weight
-            update_carry_weight()
+            if game_data['player']['carry_weight'] + total_weight > MAX_CARRY_CAPACITY:
+                print(Fore.RED + "This purchase exceeds your carry capacity. Choose fewer items.")
+                input(Fore.CYAN + "Press Enter to continue...")
+                clear_screen()
+                continue
+
+            # Finalize purchase
+            game_data["resources"]["gold"] -= total_cost
+            if item_type == "food":
+                modify_resource("food", quantity)
+            elif item_type == "water":
+                modify_resource("water", total_weight)  # Add water
+                modify_resource("waterskins", quantity)  # Add waterskins
+            elif item_type == "herbs":
+                modify_resource("herbs", quantity)
+            elif item_type == "supplies":
+                modify_resource("supplies", quantity)
+            elif item_type == "wood":
+                modify_resource("wood", total_weight)  # Add wood
+                modify_resource("wood_cords", quantity)  # Add wood cords
+
+            # Success message
+            print(Fore.GREEN + f"Purchase successful! You bought {quantity} {item_type}(s) for {total_cost} gp.")
 
         except (ValueError, KeyError):
             print("Invalid choice. Please enter a valid number (1-6).")
+
+        input(Fore.CYAN + "Press Enter to continue...")
+        clear_screen()
+
 
 
 def handle_game_start():
@@ -1129,7 +1213,7 @@ def handle_game_start():
     game_data["journey"]["current_biome"] = random.choice(BIOMES)
     update_carry_weight()
 
-    print(Fore.CYAN + f"\nYou start with {game_data['resources']['gold']} gold pieces to prepare for your journey.")
+    print(Fore.CYAN + f"You start with {game_data['resources']['gold']} gold pieces to prepare for your journey.")
     print("Spend your gold wisely to gather essential resources.")
 
     handle_purchase()  # Call the updated purchase menu
@@ -1598,14 +1682,15 @@ def update_game_status():
 def handle_help():
     print("""
           COMMANDS:
-          status - Shows your current status
-          travel - Travel a random distance
-          hunt - Hunt for wildgame food and supplies
-          scout - Scout for plant food and the road ahead
-          rest - Rest and consume food to recover health
-          cook - Cook food, spend supplies to make food
-          help - Shows this help message
-          quit - Exits the game
+          1) Status - Shows your current status with resources, health, and travel progress
+          2) Travel - Travel along the trail to the dragon's lair, consuming 1 Food & 1 Water per day
+          3) Hunt - Hunt for wildgame Food using Supplies 
+          4) Scout - Consume food to Scout for Wood, Food, Water, or Herbs
+          5) Rest - Use 1 Wood Cord to set a campfire and recover Health
+          6) Cook - Cook herbs to create Food
+          7) Help - Shows this help message
+          8) Credits - Shows game credits
+          9) Quit - Exits the game
           """)
     space()
 
@@ -1774,11 +1859,16 @@ def handle_trader():
 
 # Game Start
 display_ascii_art("title", Fore.RED)
-game_data["player"]["survival"] = int(input("Survival? (0-8 Difficulty [Higher is Easier])"))
+space()
+game_data["player"]["survival"] = int(input("Set your Survival Skill 0-8 \n(0 = Hard)---(4 = Medium)---(8 = Easy)\n"))
+clear_screen()
 print(Style.BRIGHT + welcome_text)
 space()
 display_ascii_art("dragonart", Fore.RED)
 input("Hit any key to start...") #Pause before starting gear purchase
+clear_screen()
 
 handle_game_start()
 handle_game()
+pass
+
