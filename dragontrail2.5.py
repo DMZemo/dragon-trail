@@ -361,6 +361,10 @@ def handle_game():
 # Utility Functions
 # Resource Management Functions
 def collect_resource(resource_type, amount):
+    """
+    Validates and collects the specified resource type in the given amount.
+    Ensures resource-to-container relationships are respected.
+    """
     if resource_type == "water":
         available_space = game_data["resources"]["waterskins"] * WATER_SKIN_CAPACITY - game_data["resources"]["water"]
         if available_space <= 0:
@@ -369,11 +373,18 @@ def collect_resource(resource_type, amount):
         amount = min(amount, available_space)
 
     if resource_type == "wood" and amount % WOOD_CORD_SIZE != 0:
-        print("Invalid amount. Wood must be collected in 3-lb increments.")
+        print(Fore.RED + "Invalid amount. Wood must be collected in 3-lb increments.")
+        return
+
+    if resource_type == "wood" and game_data["player"]["carry_weight"] + (amount * item_weights["wood"]) > MAX_CARRY_CAPACITY:
+        print(Fore.RED + "Not enough carry capacity for this much wood.")
+        return
+
+    if resource_type == "food" and game_data["player"]["carry_weight"] + (amount * item_weights["food"]) > MAX_CARRY_CAPACITY:
+        print(Fore.RED + "Not enough carry capacity for this much food.")
         return
 
     modify_resource(resource_type, amount)
-    update_carry_weight()
 
 
 def collect_water(amount):
@@ -409,43 +420,72 @@ def convert_wood_to_cords(wood_weight):
     return full_cords, remaining_wood
 
 def update_carry_weight():
-    """Calculates and updates the player's carry weight."""
+    """
+    Recalculates and updates the player's carry weight based on current resources.
+    Ensures that resource-to-container relationships are validated.
+    """
     total_weight = 0
+
+    # Food weight
     total_weight += game_data["resources"]["food"] * item_weights["food"]
-    total_weight += game_data["resources"]["waterskins"] * item_weights["water"]
+
+    # Water and waterskins
+    water_weight = min(game_data["resources"]["water"], game_data["resources"]["waterskins"] * WATER_SKIN_CAPACITY)
+    total_weight += water_weight
+
+    # Herbs weight
     total_weight += game_data["resources"]["herbs"] * item_weights["herbs"]
+
+    # Supplies weight
     total_weight += game_data["resources"]["supplies"] * item_weights["supplies"]
-    total_weight += game_data["resources"]["wood_cords"] * item_weights["wood"]
+
+    # Wood weight
+    wood_weight = game_data["resources"]["wood"]
+    total_weight += wood_weight
+
+    # Update wood cords
+    game_data["resources"]["wood_cords"] = wood_weight // WOOD_CORD_SIZE
+
+    # Check for over-carry conditions
+    if total_weight > MAX_CARRY_CAPACITY:
+        print(Fore.RED + f"Warning: You are over your carry capacity! ({total_weight} lbs > {MAX_CARRY_CAPACITY} lbs)")
+
+    # Update the player's carry weight
     game_data["player"]["carry_weight"] = total_weight
-    if game_data["player"]["carry_weight"] > MAX_CARRY_CAPACITY:
-        print(Fore.RED + f"You are over your carry capacity! ({game_data['player']['carry_weight']} lbs > {MAX_CARRY_CAPACITY} lbs)")
+
     return total_weight
+
+
+def drop_excess_weight(resource_type, original_amount):
+    over_capacity = game_data["player"]["carry_weight"] - MAX_CARRY_CAPACITY
+    if over_capacity > 0:
+        dropped_amount = min(over_capacity // item_weights[resource_type], game_data["resources"][resource_type] - original_amount)
+        game_data["resources"][resource_type] -= dropped_amount
+        print(Fore.YELLOW + f"Dropped {dropped_amount} {resource_type} to stay within carry capacity.")
+        update_carry_weight()
 
 def modify_resource(resource_type, amount, event_description=None):
     """Modifies a resource, respecting carry capacity for certain items."""
+    if resource_type == "water":
+        available_space = game_data["resources"]["waterskins"] * WATER_SKIN_CAPACITY - game_data["resources"]["water"]
+        if amount > 0 and amount > available_space:
+            print(Fore.RED + "Not enough space in waterskins to collect more water.")
+            amount = available_space
+        elif amount < 0 and game_data["resources"]["water"] + amount < 0:
+            print(Fore.RED + "Not enough water to consume.")
+            amount = -game_data["resources"]["water"]
+
     original_amount = game_data["resources"][resource_type]
     game_data["resources"][resource_type] += amount
-    game_data["resources"][resource_type] = max(0, game_data["resources"][resource_type]) #Ensure no negative resources
+    game_data["resources"][resource_type] = max(0, game_data["resources"][resource_type])
+    update_carry_weight()
 
     if event_description:
         print(Fore.CYAN + f"Event: {event_description}")
 
-    if resource_type in ["food", "supplies", "wood"]:
-        update_carry_weight()
-        if game_data["player"]["carry_weight"] > MAX_CARRY_CAPACITY:
-            # Calculate how much to remove to stay under capacity
-            over_capacity = game_data["player"]["carry_weight"] - MAX_CARRY_CAPACITY
-            removed_amount = 0
-            if resource_type == "food":
-                removed_amount = min(over_capacity // item_weights["food"], game_data["resources"]["food"] - original_amount)
-                modify_resource("food", -removed_amount, f"Carry capacity exceeded: Dropped {removed_amount} food.")
-            elif resource_type == "supplies":
-                removed_amount = min(over_capacity // item_weights["supplies"], game_data["resources"]["supplies"] - original_amount)
-                modify_resource("supplies", -removed_amount, f"Carry capacity exceeded: Dropped {removed_amount} supplies.")
-            elif resource_type == "wood":
-                removed_amount = min(over_capacity // item_weights["wood"], game_data["resources"]["wood"] - original_amount)
-                modify_resource("wood", -removed_amount, f"Carry capacity exceeded: Dropped {removed_amount} wood.")
-            update_carry_weight()
+    if game_data["player"]["carry_weight"] > MAX_CARRY_CAPACITY:
+        print(Fore.RED + "Warning: Carry capacity exceeded. Dropping excess resources.")
+        drop_excess_weight(resource_type, original_amount)
 
 def modify_health(amount, event_description=None):
     """Modifies health and prints a message. Handles multi-day health changes."""
@@ -1085,8 +1125,8 @@ def handle_boss_fight():
 
 def handle_purchase():
     """
-    Enhanced gear purchasing menu with carry capacity checks, screen refresh, 
-    and validation for waterskins, water, wood cords, and wood. 
+    Enhanced gear purchasing menu with carry capacity checks, screen refresh,
+    and validation for waterskins, water, wood cords, and wood.
     Automatically ends purchasing if the player runs out of gold or reaches carry capacity.
     """
     display_ascii_art("gear_shop", Fore.WHITE + Style.BRIGHT)
@@ -1157,13 +1197,14 @@ def handle_purchase():
             total_weight = item_weight * quantity
 
             if item_type == "water":  # Adjust weight and cost for waterskins
-                total_cost = 2 * quantity
-                total_weight = WATER_SKIN_CAPACITY * quantity
+                total_cost = 2 * quantity  # Cost includes both waterskin and water
+                total_weight = WATER_SKIN_CAPACITY * quantity  # Water weight per waterskin
+
             elif item_type == "wood":  # Adjust for wood cords
                 total_cost = 3 * quantity
                 total_weight = WOOD_CORD_SIZE * quantity
 
-            # Check affordability and carry capacity (again, in case of changes)
+            # Check affordability and carry capacity
             if game_data["resources"]["gold"] < total_cost:
                 print(Fore.RED + "You don't have enough gold to make this purchase.")
                 input(Fore.CYAN + "Press Enter to continue...")
@@ -1181,14 +1222,14 @@ def handle_purchase():
             if item_type == "food":
                 modify_resource("food", quantity)
             elif item_type == "water":
-                modify_resource("water", total_weight)  # Add water
                 modify_resource("waterskins", quantity)  # Add waterskins
+                modify_resource("water", WATER_SKIN_CAPACITY * quantity)  # Add full water to each waterskin
             elif item_type == "herbs":
                 modify_resource("herbs", quantity)
             elif item_type == "supplies":
                 modify_resource("supplies", quantity)
             elif item_type == "wood":
-                modify_resource("wood", total_weight)  # Add wood
+                modify_resource("wood", WOOD_CORD_SIZE * quantity)  # Add wood
                 modify_resource("wood_cords", quantity)  # Add wood cords
 
             # Success message
@@ -1199,7 +1240,6 @@ def handle_purchase():
 
         input(Fore.CYAN + "Press Enter to continue...")
         clear_screen()
-
 
 
 def handle_game_start():
@@ -1627,12 +1667,24 @@ def animate_progress_bar(miles_traveled, total_miles, duration=1):
             time.sleep(duration / 100)
 
 def update_game_status():
+    """
+    Displays the game status, ensures no negative resource values,
+    and presents relevant information about the player's progress and inventory.
+    """
+    # Ensure no negative resource values
+    for resource in game_data["resources"]:
+        game_data["resources"][resource] = max(0, game_data["resources"][resource])
+
+    # Calculate miles remaining
     miles_remaining = max(0, TOTAL_MILES - game_data["journey"]["totalMilesTraveled"])
+
+    # Display status ASCII art
     print(Back.BLACK + ascii_art["status"])
     print(f"It is the {game_data['time']['day']} day of {game_data['time']['month']}, year {game_data['time']['year']}")
     print(f"Current Biome: {game_data['journey']['current_biome']}")
     check_low_resources()
 
+    # Extract resource values
     food = game_data['resources']['food']
     water = game_data['resources']['water']
     wood_weight = game_data['resources']['wood']
@@ -1641,13 +1693,14 @@ def update_game_status():
 
     if miles_remaining == 0:
         print(Fore.GREEN + "You have reached the dragon's lair!")
-        game_data["journey"]["dragon_encountered"] == True
+        game_data["journey"]["dragon_encountered"] = True
     else:
         print(f"You have traveled {game_data['journey']['totalMilesTraveled']} miles with {miles_remaining} miles left to go.")
 
     # Convert wood weight to full cords and remaining wood weight
     full_cords, remaining_wood = convert_wood_to_cords(wood_weight)
-    
+
+    # Display game status
     print("Game Status:")
     print(f"Health: {game_data['player']['health']}")
     print(f"Food: {food}")
@@ -1656,28 +1709,29 @@ def update_game_status():
     print(f"Herbs: {herbs}")
     print(f"Supplies: {supplies}")
 
+    # Display waterskin status
     water_level = game_data['resources']['water']
     waterskins = game_data['resources']["waterskins"]
-    
-    #Waterskin representation
     print("Waterskins:")
     for i in range(waterskins):
-        fullness = min(water_level, WATER_SKIN_CAPACITY) #Handle multiple waterskins
+        fullness = min(water_level, WATER_SKIN_CAPACITY)  # Handle multiple waterskins
         water_level -= fullness
         representation = ""
-        for j in range(8):
+        for j in range(WATER_SKIN_CAPACITY):
             if j < fullness:
                 representation += "█"  # Full section
             else:
                 representation += "░"  # Empty section
         print(f"Waterskin {i+1}: [{representation}] ({fullness}/8 lbs)")
 
-    print(f"Herbs: {game_data['resources']['herbs']}")
-    print(f"Wood: {game_data['resources']['wood']} lbs ({game_data['resources']['wood_cords']} full cords)")
+    # Additional information
     print(f"Gold: {game_data['resources']['gold']} gp")
     print(f"Carry Weight: {game_data['player']['carry_weight']} lbs / {MAX_CARRY_CAPACITY} lbs")
+
+    # Display progress bar
     animate_progress_bar(game_data['journey']["totalMilesTraveled"], TOTAL_MILES)
     space()
+
 
 def handle_help():
     print("""
@@ -1696,35 +1750,52 @@ def handle_help():
 
 def add_day():
     """Advances the game by one day, adjusting resources and health."""
-    modify_resource("food", -1)
+    if game_data["resources"]["food"] > 0:
+        modify_resource("food", -1)
+    else:
+        print(Fore.RED + "You are out of food!")
 
     # Health loss events on specific days
     if game_data['time']['day'] in (14, 18):
-        modify_health(-1)
+        modify_health(-1, "Health event due to poor conditions.")
 
     # Advance the day and handle month transitions
     advance_time()
 
-def advance_days(days, resource_changes=None):
-    """Advances the game by a specified number of days, handling resource changes."""
-    food_consumed = 0
-    water_consumed = 0
+
+def advance_days(days):
+    """
+    Advances the game by a specified number of days, updating resources and checking conditions.
+    """
     for _ in range(days):
-        #Resource consumption happens here, regardless of events
-        modify_resource("food", -1, "Daily food consumption")
-        modify_resource("water", -WATER_DRINK_AMOUNT, "Daily water consumption")
+        # Consume food and water
+        if game_data["resources"]["food"] > 0:
+            modify_resource("food", -1)
+        else:
+            print(Fore.RED + "You are out of food!")
 
-        if game_data['time']['day'] in (14, 18):
-            modify_health(-1, "Daily health loss")
-        advance_time()
+        if game_data["resources"]["water"] > 0:
+            modify_resource("water", -WATER_DRINK_AMOUNT)
+        else:
+            print(Fore.RED + "You are out of water!")
 
-    if food_consumed > 0 or water_consumed > 0:
-        print(Fore.YELLOW + f"Summary: Over {days} days, you consumed {food_consumed} food and {water_consumed} water.")
+        # Recalculate carry weight after consumption
+        update_carry_weight()
 
-    # Handle resource changes from events
-    if resource_changes:
-        for resource_type, amount in resource_changes.items():
-            modify_resource(resource_type, amount)
+        # Handle day and month progression
+        game_data['time']['day'] += 1
+        if game_data['time']['day'] > 30:  # Handle month transitions
+            game_data['time']['day'] = 1
+            month_index = MONTHS.index(game_data['time']['month'])
+            game_data['time']['month'] = MONTHS[(month_index + 1) % len(MONTHS)]
+            if month_index == len(MONTHS) - 1:
+                game_data['time']['year'] += 1
+
+        # Check if health drops to 0
+        if game_data['player']['health'] <= 0:
+            handle_game_over()
+
+
 
 def advance_time():
     """Advances the game time, handling day and month transitions."""
@@ -1766,10 +1837,9 @@ def handle_trader():
 
         # Complete the trade
         supplies_gained = food_to_trade * exchange_rate_food
-        game_data['resources']['food'] -= food_to_trade
-        game_data['resources']['supplies'] += supplies_gained
+        modify_resource("food", -food_to_trade)
+        modify_resource("supplies", supplies_gained)
         print(Fore.GREEN + f"Traded {food_to_trade} food for {supplies_gained} supplies.")
-        print(f"Current food: {game_data['resources']['food']} lbs, Supplies: {game_data['resources']['supplies']}.")
         space()
 
     elif trader_type == "supplies_for_food":
@@ -1777,7 +1847,6 @@ def handle_trader():
         exchange_rate_supplies = random.randint(3, 5)  # Food gained per supply
         print(f"The trader offers {exchange_rate_supplies} food for every 1 supply you trade.")
 
-        # Check if the player has enough supplies to trade
         if game_data['resources']['supplies'] < 1:
             print(Fore.RED + "You do not have enough supplies to trade.")
             return
@@ -1794,18 +1863,15 @@ def handle_trader():
 
         # Complete the trade
         food_gained = supplies_to_trade * exchange_rate_supplies
-        game_data['resources']['supplies'] -= supplies_to_trade
-        game_data['resources']['food'] += food_gained
+        modify_resource("supplies", -supplies_to_trade)
+        modify_resource("food", food_gained)
         print(Fore.GREEN + f"Traded {supplies_to_trade} supplies for {food_gained} food.")
-        print(f"Current supplies: {game_data['resources']['supplies']}, Food: {game_data['resources']['food']} lbs.")
         space()
 
     elif trader_type == "gold_for_food":
-        # Gold-for-food trader
-        exchange_rate_gold_food = random.randint(10, 20)  # Food given per gold
+        exchange_rate_gold_food = random.randint(10, 20)
         print(f"The trader offers {exchange_rate_gold_food} food for every 1 gold you trade.")
 
-        # Check if the player has enough gold to trade
         if game_data['resources']['gold'] < 1:
             print(Fore.RED + "You do not have enough gold to trade.")
             return
@@ -1820,20 +1886,16 @@ def handle_trader():
             except ValueError:
                 print("Enter a valid number.")
 
-        # Complete the trade
         food_gained = gold_to_trade * exchange_rate_gold_food
-        game_data['resources']['gold'] -= gold_to_trade
-        game_data['resources']['food'] += food_gained
+        modify_resource("gold", -gold_to_trade)
+        modify_resource("food", food_gained)
         print(Fore.GREEN + f"Traded {gold_to_trade} gold for {food_gained} food.")
-        print(f"Current gold: {game_data['resources']['gold']}, Food: {game_data['resources']['food']} lbs.")
         space()
 
     elif trader_type == "gold_for_water":
-        # Gold-for-water trader
-        exchange_rate_gold_water = random.randint(5, 10)  # Water given per gold
+        exchange_rate_gold_water = random.randint(5, 10)
         print(f"The trader offers {exchange_rate_gold_water} water for every 1 gold you trade.")
 
-        # Check if the player has enough gold to trade
         if game_data['resources']['gold'] < 1:
             print(Fore.RED + "You do not have enough gold to trade.")
             return
@@ -1848,14 +1910,16 @@ def handle_trader():
             except ValueError:
                 print("Enter a valid number.")
 
-        # Complete the trade
         water_gained = gold_to_trade * exchange_rate_gold_water
-        game_data['resources']['gold'] -= gold_to_trade
-        game_data['resources']['water'] += water_gained
-        print(Fore.GREEN + f"Traded {gold_to_trade} gold for {water_gained} water.")
-        print(f"Current gold: {game_data['resources']['gold']}, Water: {game_data['resources']['water']} liters.")
-        space()
+        available_space = game_data["resources"]["waterskins"] * WATER_SKIN_CAPACITY - game_data["resources"]["water"]
+        if water_gained > available_space:
+            print(Fore.RED + f"Not enough waterskin space to hold {water_gained} water. You can only hold {available_space}.")
+            water_gained = available_space
 
+        modify_resource("gold", -gold_to_trade)
+        modify_resource("water", water_gained)
+        print(Fore.GREEN + f"Traded {gold_to_trade} gold for {water_gained} water.")
+        space()
 
 # Game Start
 display_ascii_art("title", Fore.RED)
