@@ -43,6 +43,8 @@ def load_high_scores():
     try:
         with open(file_path, 'r') as file:
             high_scores = [line.strip().split(',') for line in file.readlines()]
+            high_scores = [(name, int(score)) for name, score in high_scores]  # Convert scores to integers
+            high_scores.sort(key=lambda x: x[1], reverse=True)  # Sort high scores highest to lowest
         print("High Scores loaded successfully")
         logging.debug("High Scores loaded successfully")
     except FileNotFoundError:
@@ -58,11 +60,14 @@ def save_high_scores():
     """Saves high scores to a file."""
     file_path = os.path.join(os.path.dirname(__file__), "highscores.txt")  # Get relative path
     with open(file_path, "w") as f:
-        for name, score in high_scores:
+        for name, score in high_scores[:10]:  # Ensure only top 10 scores are saved
             f.write(f"{name},{score}\n")
+
 def add_high_score(name, score):
-    """Adds a new high score to the list and saves."""
+    """Adds a new high score to the list, sorts, and saves the top 10."""
     high_scores.append((name, score))
+    high_scores.sort(key=lambda x: x[1], reverse=True)  # Sort high scores highest to lowest
+    high_scores[:] = high_scores[:10]  # Keep only the top 10 scores
     save_high_scores()
 
 def display_high_scores():
@@ -84,7 +89,7 @@ def add_xp_to_score(xp):
     """Adds experience points to the player's score and saves high scores."""
     game_data["score"] += xp
     print(f"\nYou gained {xp} XP! Current score: {game_data['score']}")
-    add_high_score(game_data["player"]["name"], game_data["score"]) # Save high score after XP gain
+    add_high_score(game_data["player"]["name"], game_data["score"])  # Save high score after XP gain
 
 
 # Load High Scores
@@ -95,15 +100,16 @@ def add_xp_to_score(xp):
 
 try:
     music_tracks = {
-        "main_menu": get_resource_path("Music/Earth Prelude.mp3"),
+        "main_menu": get_resource_path("Music/The Pyre.mp3"),
         "travel": get_resource_path("Music/Earth Prelude.mp3"),
         "hunt": get_resource_path("Music/Lotus.mp3"),
         "scout": get_resource_path("Music/Lotus.mp3"),
         "rest": get_resource_path("Music/Evening.mp3"),
         "cook": get_resource_path("Music/Evening.mp3"),
-        "boss_fight": get_resource_path("Music/Machinations.mp3"),
+        "boss_fight": get_resource_path("Music/Final Battle of the Dark Wizards.mp3"),
         "gear_shop": get_resource_path("Music/Earth Prelude.mp3"),
         "mini_boss_fight": get_resource_path("Music/Machinations.mp3"),
+        "random_encounter": get_resource_path("Music/Exotic Battle.mp3"),
     }
 except Exception as e:
     print(f"Error loading music paths: {e}")
@@ -671,7 +677,7 @@ game_data = {
     "combat": {"potions": 0},
     "seed": 0,
     "last_encounter_day": 0, # Track the last day an encounter occurred
-    "encounter_chance": 0.01, #Initial encounter chance (10%)
+    "encounter_chance": 0.01, #Initial encounter chance (1%)
     "score": 0,
 }
 
@@ -685,9 +691,9 @@ game_data = {
 PLAYER_ATTACKS = [
     {'name': 'melee', 'damage_range': (10, 25), 'to_hit_bonus': 1, 'ascii_art': r"""
                       />
-         ()          //---------------------------------------------(
+         ()          //---------------------------------------------\
          (*)OXOXOXOXO(*>                                             \
-         ()          \\-----------------------------------------------)
+         ()          \\-----------------------------------------------\
                       \>
     """},
     {'name': 'ranged', 'damage_range': (10, 25), 'to_hit_bonus': 1, 'ascii_art': r"""
@@ -762,14 +768,12 @@ PLAYER_ATTACKS = [
 
 def handle_combat(enemy_name, enemy_ac, enemy_hp, atk_modifier, dpr_range, potions, xp_on_win):
     """Universal combat logic for encounters, mini-boss, and dragon."""
-    player_hp = game_data["player"]["health"]
-
     print(f"\n{Fore.RED}Encounter Stats:{Style.RESET_ALL}\nName: {enemy_name}\nAC: {enemy_ac}\nHP: {enemy_hp}\nATK Modifier: {atk_modifier}\nDPR Range: {dpr_range}")
     input("Press Enter to start the encounter...")
 
-    while enemy_hp > 0 and player_hp > 0:
+    while enemy_hp > 0 and game_data["player"]["health"] > 0:
         clear_screen()
-        print_status(enemy_name, enemy_hp, player_hp, potions)
+        print_status(enemy_name, enemy_hp, game_data["player"]["health"], potions)
         player_choice = get_player_choice()
 
         if player_choice == 7:  # Flee
@@ -777,28 +781,27 @@ def handle_combat(enemy_name, enemy_ac, enemy_hp, atk_modifier, dpr_range, potio
             if flee_success:
                 return
             else:
-                player_hp = handle_enemy_attack(player_hp, atk_modifier, dpr_range, enemy_name)
-                input("Press Enter to continue...")  # Pause after enemy attack
+                game_data["player"]["health"] = handle_enemy_attack(game_data["player"]["health"], atk_modifier, dpr_range, enemy_name, enemy_hit=False) # Enemy attack without hit check
+                input("Press Enter to continue...")
         elif player_choice == 8:  # Toggle Music
             toggle_music()
         else:
-            player_hp, enemy_hp, potions, player_defended = handle_player_turn(player_choice, player_hp, enemy_hp, potions, enemy_ac)
-            input("Press Enter to continue...")  # Pause after player attack
+            player_hp, enemy_hp, potions, player_defended = handle_player_turn(player_choice, game_data["player"]["health"], enemy_hp, potions, enemy_ac) #Pass player health directly
+            input("Press Enter to continue...")  # Pause after player action
+
             if enemy_hp > 0:
                 enemy_hit, enemy_damage_rolled = roll_to_hit(atk_modifier, PLAYER_AC)
                 if enemy_hit:
-                    if player_defended:  # Apply defense only if player defended
+                    if player_defended:
                         reflected_damage = int(enemy_damage_rolled / 2)
                         enemy_hp -= reflected_damage
                         print(Fore.GREEN + f"You deflected {reflected_damage} damage! Enemy HP: {enemy_hp}" + Style.RESET_ALL)
-                        input("Press Enter to continue...")  # Pause after enemy attack
-                    player_hp = handle_enemy_attack(player_hp, atk_modifier, dpr_range, enemy_name, enemy_damage_rolled)
-                    input("Press Enter to continue...")  # Pause after enemy attack
+                    else:
+                        game_data["player"]["health"] = handle_enemy_attack(game_data["player"]["health"], atk_modifier, dpr_range, enemy_name, enemy_damage_rolled)
                 else:
                     print(Fore.YELLOW + f"The {enemy_name} missed!" + Style.RESET_ALL)
-                    input("Press Enter to continue...")  # Pause after enemy miss
 
-        # Update cooldowns - Corrected cooldown update
+        # Update cooldowns
         game_data["player"]["defend_cooldown"] = max(0, game_data["player"]["defend_cooldown"] - 1)
         game_data["player"]["stun_splosion_cooldown"] = max(0, game_data["player"]["stun_splosion_cooldown"] - 1)
 
@@ -810,8 +813,10 @@ def handle_combat(enemy_name, enemy_ac, enemy_hp, atk_modifier, dpr_range, potio
     else:
         print(Fore.RED + f"You were defeated by the {enemy_name}!")
         print(Fore.RED + "GAME OVER!")
-        print(Fore.Red + "Your score is: " + str(game_data["score"]))
+        print(Fore.RED + "Your score is: " + str(game_data["score"]))
         handle_game_over()
+
+    game_data["player"]["health"] = player_hp  # Update player HP in game_data
 
 def handle_player_turn(player_choice, player_hp, enemy_hp, potions, enemy_ac):
     """Handles player turn in combat."""
@@ -957,6 +962,7 @@ def trigger_random_encounter(encounter_names_on_days, day):
     """Triggers a random encounter using the unified combat system."""
     current_biome = game_data["journey"]["current_biome"]
     encounter_chance = game_data.get("encounter_chance", 0)
+    
 
     if random.random() < encounter_chance:
         encounter_result = get_random_encounter(current_biome, "TYPICAL", encounter_data)
@@ -964,6 +970,9 @@ def trigger_random_encounter(encounter_names_on_days, day):
             encounter_name, encounter_stats = encounter_result
             print(Fore.RED + f"\nRandom Encounter: {encounter_name}!")
             encounter_names_on_days[day] = encounter_name
+            global current_menu
+            current_menu = "random_encounter"
+            play_music(current_menu)
 
             # Extract stats
             ac = encounter_stats["AC"]
@@ -992,6 +1001,7 @@ def trigger_random_encounter(encounter_names_on_days, day):
 
 def simulate_encounter_fight(encounter_name, ac, hp_range, atk_modifier, dpr_range, potions):
     """Simulates a fight sequence with player choices."""
+
     initial_enemy_hp = random.randint(*hp_range)  # Store the initial HP
     enemy_hp = initial_enemy_hp
     player_hp = game_data["player"]["health"] # Get initial player HP from game_data
@@ -1710,6 +1720,7 @@ def conclude_battle(dragon_health):
         print(Fore.GREEN + f"You gained {xp_gained} XP!")
         add_high_score(game_data["player"]["name"], game_data["score"])
         display_high_scores()
+        input("Press Enter to continue...")
 
     else:
         handle_game_over()
@@ -1731,11 +1742,18 @@ def add_day():
     advance_time()
 
 def advance_days(days):
-    """
-    Advances the game by a specified number of days, updating resources and checking conditions.
-    """
+    """Advances the game by a specified number of days, updating resources and checking conditions."""
     for _ in range(days):
-        # Consume food and water directly, bypassing modify_resource for this specific case
+        # Handle day and month progression FIRST
+        game_data['time']['day'] += 1
+        if game_data['time']['day'] > 30:  # Handle month transitions
+            game_data['time']['day'] = 1
+            month_index = MONTHS.index(game_data['time']['month'])
+            game_data['time']['month'] = MONTHS[(month_index + 1) % len(MONTHS)]
+            if month_index == len(MONTHS) - 1:
+                game_data['time']['year'] += 1
+
+        # Consume food and water AFTER advancing the day
         if game_data["resources"]["food"] > 0:
             game_data["resources"]["food"] -= 1
         else:
@@ -1748,15 +1766,6 @@ def advance_days(days):
 
         # Recalculate carry weight after consumption
         update_carry_weight()
-
-        # Handle day and month progression
-        game_data['time']['day'] += 1
-        if game_data['time']['day'] > 30:  # Handle month transitions
-            game_data['time']['day'] = 1
-            month_index = MONTHS.index(game_data['time']['month'])
-            game_data['time']['month'] = MONTHS[(month_index + 1) % len(MONTHS)]
-            if month_index == len(MONTHS) - 1:
-                game_data['time']['year'] += 1
 
         # Check if health drops to 0
         if game_data['player']['health'] <= 0:
@@ -1998,10 +2007,12 @@ def handle_purchase():
 
         if game_data["resources"]["gold"] <= 0:
             print(Fore.RED + "\nYou've run out of gold! Shopping is complete.")
+            input(Fore.CYAN + "Press Enter to continue...")
             break  # Exit the loop if no gold remains
 
         if game_data['player']['carry_weight'] >= MAX_CARRY_CAPACITY:
             print(Fore.RED + "\nYou've reached your carry capacity! Shopping is complete.")
+            input(Fore.CYAN + "Press Enter to continue...")
             break  # Exit the loop if carry capacity is reached
 
         try:
@@ -2038,6 +2049,7 @@ def handle_purchase():
             if choice == 6:  # Finish shopping
                 clear_screen()
                 print(Fore.YELLOW + "\nGood Luck to you Adventurer! And so your journey begins...")
+                input(Fore.CYAN + "Press Enter to continue...")
                 break  # Exit the loop if the player chooses to finish shopping
 
             # Map choice to item type and cost
@@ -2590,15 +2602,18 @@ def travel():
     display_ascii_art("travel", Fore.BLUE)
     display_ascii_art("hourglasses", Fore.BLUE)
     print(f"You have {food} food and {water} water.")
-    print(f"You can travel for up to {max_days} days.")
+    print(f"You can travel for up to {max_days} days. Enter 0 to cancel and return to the main menu.")
 
     while True:
         try:
-            days_to_travel = int(input(f"How many days would you like to travel? (1-{max_days}): "))
-            if 1 <= days_to_travel <= max_days:
+            days_to_travel = int(input(f"How many days would you like to travel? (0-{max_days}): "))
+            if days_to_travel == 0:
+                print("Travel canceled. Returning to the main menu...")
+                return
+            elif 1 <= days_to_travel <= max_days:
                 break
             else:
-                print(f"Please enter a number between 1 and {max_days}.")
+                print(f"Please enter a number between 0 and {max_days}.")
         except ValueError:
             print("Invalid input. Please enter a number.")
 
@@ -3024,16 +3039,20 @@ def handle_cook():
     print(f"You have {game_data['resources']['herbs']} herbs and {game_data['resources']['supplies']} supplies.")
     print("1. Cook herbs for food")
     print("2. Cook herbs and supplies for potions")
+    print("0. Cancel")
 
     while True:
         try:
-            choice = int(input("What would you like to cook? (1-2): "))
-            if choice in [1, 2]:
+            choice = int(input("What would you like to cook? (0-2): "))
+            if choice in [0, 1, 2]:
                 break
             else:
-                print("Enter a valid choice (1 or 2).")
+                print("Enter a valid choice (0-2).")
         except ValueError:
             print("Enter a valid number.")
+
+    if choice == 0:
+        return  # Cancel cooking
 
     if choice == 1:
         # Ask the player how many herbs to use for food
@@ -3109,90 +3128,54 @@ def handle_help():
 def handle_game():
     global current_menu
 
+    menu_options = {
+        '1': ("status", update_game_status),
+        '2': ("travel", lambda: (travel(), trigger_environmental_event())),
+        '3': ("hunt", handle_hunt),
+        '4': ("scout", lambda: (handle_scout(), trigger_environmental_event())),
+        '5': ("rest", handle_rest),
+        '6': ("cook", handle_cook),
+        '7': ("help", handle_help),
+        '8': ("credits", lambda: display_ascii_art("writtenby", Fore.LIGHTMAGENTA_EX, Style.BRIGHT)),
+        '9': ("quit", handle_game_over),
+        '0': ("boss_fight", handle_boss_fight) if game_data["journey"]["dragon_encountered"] else None
+    }
+
+    cheat_codes = {
+        'bubblegum': lambda: (print("You're a dirty little cheater aren't you? Here's a dragon to fight!"), handle_boss_fight()),
+        'rowan': lambda: (game_data['resources']['gold'].__iadd__(1000), print("You're a dirty little cheater aren't you? Here's 1000 doge coins!")),
+        'smudge': lambda: (game_data['player']['carry_weight'].__setitem__(1000), print("You're a dirty little cheater aren't you? Here's 1000 pocketses!")),
+        'jillybean': lambda: (game_data['journey']['totalMilesTraveled'].__iadd__(500), print("You're a dirty little cheater aren't you? Here's 500 miles traveled!"), check_mini_boss_encounter())
+    }
+    
     while True:
         check_win_condition()
         clear_screen()
         display_ascii_art("main_menu", Fore.LIGHTYELLOW_EX, Style.BRIGHT)
         command = input("What would you like to do? \n (1) Status\n (2) Travel\n (3) Hunt\n (4) Scout\n (5) Rest\n (6) Cook\n (7) Help\n (8) Credits\n (9) Quit\n").strip().lower()
 
-        # Handle cheat codes
-        if command == 'bubblegum':
-            print("You're a dirty little cheater aren't you? Here's a dragon to fight!")
-            current_menu = "boss_fight"  # Start the boss fight
-            handle_boss_fight()  # Trigger the boss fight immediately
-            continue  # Skip to the next iteration
-        elif command == 'rowan':
-            game_data['resources']['gold'] += 1000
-            print("You're a dirty little cheater aren't you? Here's 1000 doge coins!")
-            continue  # Skip to the next iteration
-        elif command == 'smudge':
-            game_data['player']['carry_weight'] = 1000
-            print("You're a dirty little cheater aren't you? Here's 1000 pocketses!")
-            continue  # Skip to the next iteration
-        elif command == 'jillybean':
-            clear_screen()
-            game_data['journey']['totalMilesTraveled'] += 500
-            print("You're a dirty little cheater aren't you? Here's 500 miles traveled!")
-            check_mini_boss_encounter()
-            continue  # Skip to the next iteration
+        if command in cheat_codes:
+            cheat_codes[command]()
+            continue
 
-
-        # Determine the menu based on the command
-        if command == '1':
-            current_menu = "status"
-        elif command == '2':
-            current_menu = "travel"
-        elif command == '3':
-            current_menu = "hunt"
-        elif command == '4':
-            current_menu = "scout"
-        elif command == '5':
-            current_menu = "rest"
-        elif command == '6':
-            current_menu = "cook"
-        elif command == '7':
-            current_menu = "help"
-        elif command == '8':
-            current_menu = "credits"
-        elif command == '9':
-            handle_game_over()
-            break  # Exit the loop if the game is over
-        elif game_data["journey"]["dragon_encountered"] and command == '0':
-            current_menu = "boss_fight"
+        if command in menu_options:
+            current_menu, action = menu_options[command]
+            if action:
+                play_music(current_menu)
+                action()
+            if command == '9':
+                break
         else:
             print("Invalid command.")
-            continue  # Skip to the next iteration if the command is invalid
-
-        # Now set the music *after* determining the menu
-        play_music(current_menu)
-
-        # Execute the corresponding game function
-        if command == '1':
-            update_game_status()
-        elif command == '2':
-            travel()
-            trigger_environmental_event()
-        elif command == '3':
-            handle_hunt()
-        elif command == '4':
-            handle_scout()
-            trigger_environmental_event()
-        elif command == '5':
-            handle_rest()
-        elif command == '6':
-            handle_cook()
-        elif command == '7':
-            handle_help()
-        elif command == '8':
-            display_ascii_art("writtenby", Fore.LIGHTMAGENTA_EX, Style.BRIGHT)
-        elif game_data["journey"]["dragon_encountered"] and command == '0':
-            handle_boss_fight()
+            continue
 
 def handle_game_start():
     # Game Start
     display_ascii_art("title", Fore.RED)
     space()
     load_high_scores()
+    current_menu = "main_menu"
+    play_music(current_menu)
 
     # Ask for the player's name
     player_name = input("Name? (This will be used to create the world seed for your gameplay): ").strip()
